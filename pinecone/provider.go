@@ -47,11 +47,13 @@ func (p *pineconeProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 		Description: "Interact with Pinecone.",
 		Attributes: map[string]schema.Attribute{
 			"environment": schema.StringAttribute{
-				Optional: true,
+				Description: "The Pinecone environment to use.",
+				Optional:    true,
 			},
 			"api_key": schema.StringAttribute{
-				Optional:  true,
-				Sensitive: true,
+				Description: "The Pinecone API key to use.",
+				Optional:    true,
+				Sensitive:   true,
 			},
 		},
 	}

@@ -51,45 +51,59 @@ func (d *indexDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 // Schema defines the schema for the data source.
 func (d *indexDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Get information about an index.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "The ID of the index.",
+				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "The name of the index.",
+				Required:    true,
 			},
 			"metric": schema.StringAttribute{
-				Computed: true,
+				Description: "The metric of the index.",
+				Computed:    true,
 			},
 			"dimension": schema.Int64Attribute{
-				Computed: true,
+				Description: "The dimension of the index.",
+				Computed:    true,
 			},
 			"replicas": schema.Int64Attribute{
-				Computed: true,
+				Description: "The replicas of the index.",
+				Computed:    true,
 			},
 			"shards": schema.Int64Attribute{
-				Computed: true,
+				Description: "The shards of the index.",
+				Computed:    true,
 			},
 			"pods": schema.Int64Attribute{
-				Computed: true,
+				Description: "The pods of the index.",
+				Computed:    true,
 			},
 			"pod_type": schema.StringAttribute{
-				Computed: true,
+				Description: "The pod type of the index.",
+				Computed:    true,
 			},
 			"status": schema.SingleNestedAttribute{
-				Computed: true,
+				Description: "The status of the index.",
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"host": schema.StringAttribute{
-						Computed: true,
+						Description: "The host of the index.",
+						Computed:    true,
 					},
 					"port": schema.Int64Attribute{
-						Computed: true,
+						Description: "The port of the index.",
+						Computed:    true,
 					},
 					"state": schema.StringAttribute{
-						Computed: true,
+						Description: "The state of the index.",
+						Computed:    true,
 					},
 					"ready": schema.BoolAttribute{
-						Computed: true,
+						Description: "The ready state of the index.",
+						Computed:    true,
 					},
 				},
 			},

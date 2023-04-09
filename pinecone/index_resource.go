@@ -52,50 +52,59 @@ func (r *indexResource) Metadata(_ context.Context, req resource.MetadataRequest
 // Schema defines the schema for the resource.
 func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Manage an index.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "The ID of the index.",
+				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "The name of the index.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"dimension": schema.Int64Attribute{
-				Required: true,
+				Description: "The dimension of the index.",
+				Required:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"metric": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  stringdefault.StaticString("cosine"),
+				Description: "The metric of the index.",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("cosine"),
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"pods": schema.Int64Attribute{
-				Optional: true,
-				Computed: true,
-				Default:  int64default.StaticInt64(1),
+				Description: "The number of pods of the index.",
+				Optional:    true,
+				Computed:    true,
+				Default:     int64default.StaticInt64(1),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"replicas": schema.Int64Attribute{
-				Optional: true,
-				Computed: true,
-				Default:  int64default.StaticInt64(1),
+				Description: "The number of replicas of the index.",
+				Optional:    true,
+				Computed:    true,
+				Default:     int64default.StaticInt64(1),
 			},
 			"pod_type": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  stringdefault.StaticString("p1.x1"),
+				Description: "The pod type of the index.",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("p1.x1"),
 			},
 			"last_updated": schema.StringAttribute{
-				Computed: true,
+				Description: "The last updated time of the index.",
+				Computed:    true,
 			},
 		},
 	}
