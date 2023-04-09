@@ -3,12 +3,12 @@
 page_title: "pinecone Provider"
 subcategory: ""
 description: |-
-  Interact with Pinecone.
+  Interact with Pinecone vector database. https://www.pinecone.io/
 ---
 
 # pinecone Provider
 
-Interact with Pinecone.
+Interact with Pinecone vector database. https://www.pinecone.io/
 
 ## Example Usage
 
