@@ -1,0 +1,18 @@
+name: tag generate for release
+on:
+  push:
+    branches:
+      - 'main'
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  tagpr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Songmu/tagpr@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAGPR_CHANGELOG: "false"
+          TAGPR_RELEASE_BRANCH: "main"
