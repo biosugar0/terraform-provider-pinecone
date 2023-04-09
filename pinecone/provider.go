@@ -44,7 +44,7 @@ func (p *pineconeProvider) Metadata(_ context.Context, _ provider.MetadataReques
 // Schema defines the provider-level schema for configuration data.
 func (p *pineconeProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Interact with Pinecone.",
+		Description: "Interact with Pinecone vector database. https://www.pinecone.io/ ",
 		Attributes: map[string]schema.Attribute{
 			"environment": schema.StringAttribute{
 				Description: "The Pinecone environment to use.",
