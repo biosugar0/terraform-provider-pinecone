@@ -62,7 +62,7 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Description: "The name of the index.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"dimension": schema.Int64Attribute{
@@ -70,6 +70,7 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Required:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"metric": schema.StringAttribute{
@@ -79,6 +80,7 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Default:     stringdefault.StaticString("cosine"),
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"pods": schema.Int64Attribute{
@@ -88,6 +90,7 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Default:     int64default.StaticInt64(1),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"replicas": schema.Int64Attribute{
