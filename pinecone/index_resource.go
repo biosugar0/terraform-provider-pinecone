@@ -34,14 +34,15 @@ type indexResource struct {
 }
 
 type indexResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Dimension   types.Int64  `tfsdk:"dimension"`
-	Metric      types.String `tfsdk:"metric"`
-	Pods        types.Int64  `tfsdk:"pods"`
-	Replicas    types.Int64  `tfsdk:"replicas"`
-	PodType     types.String `tfsdk:"pod_type"`
-	LastUpdated types.String `tfsdk:"last_updated"`
+	ID             types.String `tfsdk:"id"`
+	Name           types.String `tfsdk:"name"`
+	Dimension      types.Int64  `tfsdk:"dimension"`
+	Metric         types.String `tfsdk:"metric"`
+	Pods           types.Int64  `tfsdk:"pods"`
+	Replicas       types.Int64  `tfsdk:"replicas"`
+	PodType        types.String `tfsdk:"pod_type"`
+	MetadataConfig types.Map    `tfsdk:"metadata_config"`
+	LastUpdated    types.String `tfsdk:"last_updated"`
 }
 
 // Metadata returns the resource type name.
@@ -104,6 +105,11 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("p1.x1"),
+			},
+			"metadata_config": schema.MapNestedAttribute{
+				Description: "The metadata configuration for the index. By default, all metadata is indexed; when metadata_config is present, only specified metadata fields are indexed. See https://docs.pinecone.io/reference/create_index for more.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "The last updated time of the index.",

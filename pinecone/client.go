@@ -218,13 +218,19 @@ func (p *PodType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Nested struct that supports the format {"indexed": ["example_metadata_field"]}
+type MetadataConfig struct {
+	Indexed []string `json:"indexed"`
+}
+
 type CreateIndexRequest struct {
-	Name      string  `json:"name"` // The name of the index to be created. The maximum length is 45 characters.
-	Dimension int     `json:"dimension"`
-	Metric    Metric  `json:"metric"` // You can use 'euclidean', 'cosine', or 'dotproduct'.
-	Pods      int     `json:"pods"`
-	Replicas  int     `json:"replicas"`
-	PodType   PodType `json:"pod_type"` // The type of pod to use. One of s1, p1, or p2 appended with . and one of x1, x2, x4, or x8.
+	Name           string          `json:"name"` // The name of the index to be created. The maximum length is 45 characters.
+	Dimension      int             `json:"dimension"`
+	Metric         Metric          `json:"metric"` // You can use 'euclidean', 'cosine', or 'dotproduct'.
+	Pods           int             `json:"pods"`
+	Replicas       int             `json:"replicas"`
+	PodType        PodType         `json:"pod_type"` // The type of pod to use. One of s1, p1, or p2 appended with . and one of x1, x2, x4, or x8.
+	MetadataConfig *MetadataConfig `json:"metadata_config,omitempty"`
 }
 
 // CreateIndex creates an index
@@ -268,13 +274,14 @@ type DescribeIndexResponse struct {
 }
 
 type DescribeDatabaseResponse struct {
-	Name      string  `json:"name"`
-	Metric    Metric  `json:"metric"`
-	Dimension int     `json:"dimension"`
-	Replicas  int     `json:"replicas"`
-	Shards    int     `json:"shards"`
-	Pods      int     `json:"pods"`
-	PodType   PodType `json:"pod_type"`
+	Name           string          `json:"name"`
+	Metric         Metric          `json:"metric"`
+	Dimension      int             `json:"dimension"`
+	Replicas       int             `json:"replicas"`
+	Shards         int             `json:"shards"`
+	Pods           int             `json:"pods"`
+	PodType        PodType         `json:"pod_type"`
+	MetadataConfig *MetadataConfig `json:"metadata_config,omitempty"`
 }
 
 type DescribeStatusResponse struct {

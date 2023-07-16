@@ -14,9 +14,12 @@ func TestAccIndexResource(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "pinecone_index" "test" {
-  name      = "test"
-  dimension = 1536
-  metric    = "dotproduct"
+	name           = "test"
+	dimension      = 1536
+	metric         = "dotproduct"
+	metadata_config {
+		indexed = ["potato"]
+	}
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -28,6 +31,26 @@ resource "pinecone_index" "test" {
 					resource.TestCheckResourceAttr("pinecone_index.test", "pods", "1"),
 					resource.TestCheckResourceAttr("pinecone_index.test", "replicas", "1"),
 					resource.TestCheckResourceAttr("pinecone_index.test", "pod_type", "p1.x1"),
+					resource.TestCheckResourceAttr("pinecone_index.test", "metadata_config.0.indexed.0", "potato"),
+				),
+			},
+			{
+				Config: providerConfig + `
+resource "pinecone_index" "test" {
+	name      = "test"
+	dimension = 1536
+	metric    = "dotproduct"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("pinecone_index.test", "name", "test"),
+					resource.TestCheckResourceAttr("pinecone_index.test", "id", "test"),
+					resource.TestCheckResourceAttr("pinecone_index.test", "dimension", "1536"),
+					resource.TestCheckResourceAttr("pinecone_index.test", "metric", "dotproduct"),
+					resource.TestCheckResourceAttr("pinecone_index.test", "pods", "1"),
+					resource.TestCheckResourceAttr("pinecone_index.test", "replicas", "1"),
+					resource.TestCheckResourceAttr("pinecone_index.test", "pod_type", "p1.x1"),
+					resource.TestCheckNoResourceAttr("pinecone_index.test", "metadata_config"),
 				),
 			},
 			// ImportState testing
