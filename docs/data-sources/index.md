@@ -45,5 +45,3 @@ Read-Only:
 - `port` (Number) The port of the index.
 - `ready` (Boolean) The ready state of the index.
 - `state` (String) The state of the index.
-
-
