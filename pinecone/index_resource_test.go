@@ -1,10 +1,25 @@
 package pinecone
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
+
+func testCheckNoMetadataConfigAttribute(s *terraform.State) error {
+	rs, ok := s.RootModule().Resources["pinecone_index.test"]
+	if !ok {
+		return fmt.Errorf("Not found: %s", "pinecone_index.test")
+	}
+
+	if _, ok := rs.Primary.Attributes["metadata_config"]; ok {
+		return fmt.Errorf("`metadata_config` attribute still exists")
+	}
+
+	return nil
+}
 
 func TestAccIndexResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -14,10 +29,10 @@ func TestAccIndexResource(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "pinecone_index" "test" {
-	name           = "test"
-	dimension      = 1536
-	metric         = "dotproduct"
-	metadata_config {
+	name            = "test"
+	dimension       = 1536
+	metric          = "dotproduct"
+	metadata_config = {
 		indexed = ["potato"]
 	}
 }
@@ -31,9 +46,10 @@ resource "pinecone_index" "test" {
 					resource.TestCheckResourceAttr("pinecone_index.test", "pods", "1"),
 					resource.TestCheckResourceAttr("pinecone_index.test", "replicas", "1"),
 					resource.TestCheckResourceAttr("pinecone_index.test", "pod_type", "p1.x1"),
-					resource.TestCheckResourceAttr("pinecone_index.test", "metadata_config.0.indexed.0", "potato"),
+					resource.TestCheckResourceAttr("pinecone_index.test", "metadata_config.indexed.0", "potato"),
 				),
 			},
+			// Check metadata_config is not set
 			{
 				Config: providerConfig + `
 resource "pinecone_index" "test" {
@@ -50,7 +66,7 @@ resource "pinecone_index" "test" {
 					resource.TestCheckResourceAttr("pinecone_index.test", "pods", "1"),
 					resource.TestCheckResourceAttr("pinecone_index.test", "replicas", "1"),
 					resource.TestCheckResourceAttr("pinecone_index.test", "pod_type", "p1.x1"),
-					resource.TestCheckNoResourceAttr("pinecone_index.test", "metadata_config"),
+					testCheckNoMetadataConfigAttribute,
 				),
 			},
 			// ImportState testing

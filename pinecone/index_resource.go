@@ -2,6 +2,7 @@ package pinecone
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -33,16 +34,30 @@ type indexResource struct {
 	client PineconeClientInterface
 }
 
+// metadataConfig is the metadata config implementation.
+type tfMetadataConfig struct {
+	Indexed []string `tfsdk:"indexed"`
+}
+
 type indexResourceModel struct {
-	ID             types.String `tfsdk:"id"`
-	Name           types.String `tfsdk:"name"`
-	Dimension      types.Int64  `tfsdk:"dimension"`
-	Metric         types.String `tfsdk:"metric"`
-	Pods           types.Int64  `tfsdk:"pods"`
-	Replicas       types.Int64  `tfsdk:"replicas"`
-	PodType        types.String `tfsdk:"pod_type"`
-	MetadataConfig types.Map    `tfsdk:"metadata_config"`
-	LastUpdated    types.String `tfsdk:"last_updated"`
+	ID             types.String      `tfsdk:"id"`
+	Name           types.String      `tfsdk:"name"`
+	Dimension      types.Int64       `tfsdk:"dimension"`
+	Metric         types.String      `tfsdk:"metric"`
+	Pods           types.Int64       `tfsdk:"pods"`
+	Replicas       types.Int64       `tfsdk:"replicas"`
+	PodType        types.String      `tfsdk:"pod_type"`
+	MetadataConfig *tfMetadataConfig `tfsdk:"metadata_config"`
+	LastUpdated    types.String      `tfsdk:"last_updated"`
+}
+
+func NewTFMetadataConfig(metadataConfig *MetadataConfig) (*tfMetadataConfig, error) {
+	if metadataConfig == nil {
+		return nil, nil
+	}
+	return &tfMetadataConfig{
+		Indexed: metadataConfig.Indexed,
+	}, nil
 }
 
 // Metadata returns the resource type name.
@@ -106,10 +121,18 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Computed:    true,
 				Default:     stringdefault.StaticString("p1.x1"),
 			},
-			"metadata_config": schema.MapNestedAttribute{
-				Description: "The metadata configuration for the index. By default, all metadata is indexed; when metadata_config is present, only specified metadata fields are indexed. See https://docs.pinecone.io/reference/create_index for more.",
+			"metadata_config": schema.SingleNestedAttribute{
+				Description: "The metadata config of the index.",
 				Optional:    true,
 				Computed:    true,
+				Attributes: map[string]schema.Attribute{
+					"indexed": schema.ListAttribute{
+						Description: "The indexed fields of the index.",
+						Optional:    true,
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+				},
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "The last updated time of the index.",
@@ -156,6 +179,18 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		PodType:   podType,
 	}
 
+	if plan.MetadataConfig != nil {
+		metadataConfig, err := NewMetadataConfig(plan.MetadataConfig)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating index",
+				"Could not create index, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		item.MetadataConfig = metadataConfig
+	}
+
 	// Create new order
 	err = r.client.CreateIndex(ctx, item)
 	if err != nil {
@@ -191,6 +226,7 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		)
 		return
 	}
+
 	// Map response body to schema and populate Computed attribute values
 	plan = indexResourceModel{
 		ID:        types.StringValue(result.Database.Name),
@@ -202,6 +238,18 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		PodType:   types.StringValue(result.Database.PodType.String()),
 	}
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	if result.Database.MetadataConfig != nil {
+		planTFMetadataConfig, err := NewTFMetadataConfig(result.Database.MetadataConfig)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating index",
+				"Could not create index, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		plan.MetadataConfig = planTFMetadataConfig
+	}
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -238,6 +286,8 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
+	log.Printf("[DEBUG] Index: %+v", index)
+
 	// Overwrite items with refreshed state
 	state = indexResourceModel{
 		ID:        types.StringValue(index.Database.Name),
@@ -247,6 +297,19 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		Pods:      types.Int64Value(int64(index.Database.Pods)),
 		Replicas:  types.Int64Value(int64(index.Database.Replicas)),
 		PodType:   types.StringValue(index.Database.PodType.String()),
+	}
+
+	if index.Database.MetadataConfig != nil {
+		stateTFMetadataConfig, err := NewTFMetadataConfig(index.Database.MetadataConfig)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error Reading Pinecone Index",
+				"Could not read Pinecone Index, unexpected error: "+err.Error(),
+			)
+			return
+		}
+
+		state.MetadataConfig = stateTFMetadataConfig
 	}
 
 	// Set refreshed state
@@ -325,6 +388,18 @@ func (r *indexResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		Pods:      types.Int64Value(int64(result.Database.Pods)),
 		Replicas:  types.Int64Value(int64(result.Database.Replicas)),
 		PodType:   types.StringValue(result.Database.PodType.String()),
+	}
+
+	if result.Database.MetadataConfig != nil {
+		planTFMetadataConfig, err := NewTFMetadataConfig(result.Database.MetadataConfig)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error updating index",
+				"Could not update index, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		plan.MetadataConfig = planTFMetadataConfig
 	}
 
 	// Set state to fully populated data

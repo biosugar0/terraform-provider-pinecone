@@ -223,6 +223,15 @@ type MetadataConfig struct {
 	Indexed []string `json:"indexed"`
 }
 
+func NewMetadataConfig(receivedMetadataConfig *tfMetadataConfig) (*MetadataConfig, error) {
+	if receivedMetadataConfig == nil {
+		return nil, nil
+	}
+	return &MetadataConfig{
+		Indexed: receivedMetadataConfig.Indexed,
+	}, nil
+}
+
 type CreateIndexRequest struct {
 	Name           string          `json:"name"` // The name of the index to be created. The maximum length is 45 characters.
 	Dimension      int             `json:"dimension"`

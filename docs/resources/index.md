@@ -30,7 +30,7 @@ resource "pinecone_index" "test" {
 
 ### Optional
 
-- `metadata_config` (Attributes Map) The metadata configuration for the index. By default, all metadata is indexed; when metadata_config is present, only specified metadata fields are indexed. See https://docs.pinecone.io/reference/create_index for more. (see [below for nested schema](#nestedatt--metadata_config))
+- `metadata_config` (Attributes) The metadata config of the index. (see [below for nested schema](#nestedatt--metadata_config))
 - `metric` (String) The metric of the index.
 - `pod_type` (String) The pod type of the index.
 - `pods` (Number) The number of pods of the index.
@@ -43,6 +43,10 @@ resource "pinecone_index" "test" {
 
 <a id="nestedatt--metadata_config"></a>
 ### Nested Schema for `metadata_config`
+
+Optional:
+
+- `indexed` (List of String) The indexed fields of the index.
 
 ## Import
 

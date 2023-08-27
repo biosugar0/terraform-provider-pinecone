@@ -25,11 +25,14 @@ data "pinecone_index" "test" {
 
 - `name` (String) The name of the index.
 
+### Optional
+
+- `metadata_config` (Attributes) The metadata config of the index. (see [below for nested schema](#nestedatt--metadata_config))
+
 ### Read-Only
 
 - `dimension` (Number) The dimension of the index.
 - `id` (String) The ID of the index.
-- `metadata_config` (Attributes) The metadata config of the index. (see [below for nested schema](#nestedatt--metadata_config))
 - `metric` (String) The metric of the index.
 - `pod_type` (String) The pod type of the index.
 - `pods` (Number) The pods of the index.
@@ -40,9 +43,9 @@ data "pinecone_index" "test" {
 <a id="nestedatt--metadata_config"></a>
 ### Nested Schema for `metadata_config`
 
-Read-Only:
+Optional:
 
-- `indexed` (List of String) The indexed of the index.
+- `indexed` (List of String) The indexed fields of the index.
 
 
 <a id="nestedatt--status"></a>

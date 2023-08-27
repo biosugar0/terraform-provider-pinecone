@@ -25,16 +25,16 @@ type indexDataSource struct {
 }
 
 type indexDataSourceModel struct {
-	ID             types.String    `tfsdk:"id"`
-	Name           types.String    `tfsdk:"name"`
-	Metric         types.String    `tfsdk:"metric"`
-	Dimension      types.Int64     `tfsdk:"dimension"`
-	Replicas       types.Int64     `tfsdk:"replicas"`
-	Shards         types.Int64     `tfsdk:"shards"`
-	Pods           types.Int64     `tfsdk:"pods"`
-	PodType        types.String    `tfsdk:"pod_type"`
-	MetadataConfig *metadataConfig `tfsdk:"metadata_config"`
-	Status         *indexStatus    `tfsdk:"status"`
+	ID             types.String      `tfsdk:"id"`
+	Name           types.String      `tfsdk:"name"`
+	Metric         types.String      `tfsdk:"metric"`
+	Dimension      types.Int64       `tfsdk:"dimension"`
+	Replicas       types.Int64       `tfsdk:"replicas"`
+	Shards         types.Int64       `tfsdk:"shards"`
+	Pods           types.Int64       `tfsdk:"pods"`
+	PodType        types.String      `tfsdk:"pod_type"`
+	MetadataConfig *tfMetadataConfig `tfsdk:"metadata_config"`
+	Status         *indexStatus      `tfsdk:"status"`
 }
 
 type indexStatus struct {
@@ -42,10 +42,6 @@ type indexStatus struct {
 	Port  types.Int64  `tfsdk:"port"`
 	State types.String `tfsdk:"state"`
 	Ready types.Bool   `tfsdk:"ready"`
-}
-
-type metadataConfig struct {
-	Indexed types.List `tfsdk:"indexed"`
 }
 
 // Metadata returns the data source type name.
@@ -92,10 +88,12 @@ func (d *indexDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 			},
 			"metadata_config": schema.SingleNestedAttribute{
 				Description: "The metadata config of the index.",
+				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"indexed": schema.ListAttribute{
-						Description: "The indexed of the index.",
+						Description: "The indexed fields of the index.",
+						Optional:    true,
 						Computed:    true,
 						ElementType: types.StringType,
 					},
@@ -152,35 +150,32 @@ func (d *indexDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		return
 	}
 
-	// Define MetadataConfig
-	var metaConfig *metadataConfig
-	if index.Database.MetadataConfig != nil {
-		metaConfig = &metadataConfig{}
-		// Use ListValueFrom to create List from a slice of strings
-		listVal, diags := types.ListValueFrom(ctx, types.StringType, index.Database.MetadataConfig.Indexed)
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-		metaConfig.Indexed = listVal
-	}
-
 	state := indexDataSourceModel{
-		ID:             types.StringValue(data.Name.ValueString()), // Set a unique value for the ID field
-		Name:           types.StringValue(index.Database.Name),
-		Metric:         types.StringValue(index.Database.Metric.String()),
-		Dimension:      types.Int64Value(int64(index.Database.Dimension)),
-		Replicas:       types.Int64Value(int64(index.Database.Replicas)),
-		Shards:         types.Int64Value(int64(index.Database.Shards)),
-		Pods:           types.Int64Value(int64(index.Database.Pods)),
-		PodType:        types.StringValue(index.Database.PodType.String()),
-		MetadataConfig: metaConfig,
+		ID:        types.StringValue(data.Name.ValueString()), // Set a unique value for the ID field
+		Name:      types.StringValue(index.Database.Name),
+		Metric:    types.StringValue(index.Database.Metric.String()),
+		Dimension: types.Int64Value(int64(index.Database.Dimension)),
+		Replicas:  types.Int64Value(int64(index.Database.Replicas)),
+		Shards:    types.Int64Value(int64(index.Database.Shards)),
+		Pods:      types.Int64Value(int64(index.Database.Pods)),
+		PodType:   types.StringValue(index.Database.PodType.String()),
 		Status: &indexStatus{
 			Host:  types.StringValue(index.Status.Host),
 			Port:  types.Int64Value(int64(index.Status.Port)),
 			State: types.StringValue(index.Status.State),
 			Ready: types.BoolValue(index.Status.Ready),
 		},
+	}
+
+	// Define MetadataConfig
+	if index.Database.MetadataConfig != nil {
+		metadataConfig, err := NewTFMetadataConfig(index.Database.MetadataConfig)
+		if err != nil {
+			resp.Diagnostics.AddError("Error NewTFMetadataConfig", err.Error())
+			return
+		}
+
+		state.MetadataConfig = metadataConfig
 	}
 
 	// Set state
