@@ -30,16 +30,19 @@ resource "pinecone_index" "test" {
 
 ### Optional
 
+- `metadata_config` (Attributes Map) The metadata configuration for the index. By default, all metadata is indexed; when metadata_config is present, only specified metadata fields are indexed. See https://docs.pinecone.io/reference/create_index for more. (see [below for nested schema](#nestedatt--metadata_config))
 - `metric` (String) The metric of the index.
 - `pod_type` (String) The pod type of the index.
 - `pods` (Number) The number of pods of the index.
 - `replicas` (Number) The number of replicas of the index.
-- `metadata_config` (Map) The metadata config of the index. (see [details below](#nestedmap--metadata_config))
 
 ### Read-Only
 
 - `id` (String) The ID of the index.
 - `last_updated` (String) The last updated time of the index.
+
+<a id="nestedatt--metadata_config"></a>
+### Nested Schema for `metadata_config`
 
 ## Import
 
@@ -48,18 +51,3 @@ Import is supported using the following syntax:
 ```shell
 terraform import pinecone_index.test test
 ```
-
-<a id="nestedmap--metadata_config"></a>
-### Metadata Config
-
-Per [Pinecone documentation](https://docs.pinecone.io/reference/create_index):
-
-> Configuration for the behavior of Pinecone's internal metadata index. By default, all metadata is indexed; when metadata_config is present, only specified metadata fields are indexed. 
-
-To specify metadata fields to index, provide a JSON object of the following format:
-
-```json
-{"indexed": ["example_metadata_field"]}
-```
-
-The value of `indexed` should be a list of metadata fields to index. Remember that if no metadata config is specified, all metadata fields will be indexed.
