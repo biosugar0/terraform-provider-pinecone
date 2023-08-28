@@ -226,13 +226,14 @@ type MetadataConfig struct {
 	Indexed []string `json:"indexed"`
 }
 
-func NewMetadataConfig(receivedMetadataConfig *types.Object) (*MetadataConfig, error) {
-	if receivedMetadataConfig == nil {
+func NewMetadataConfig(receivedMetadataConfig types.Object) (*MetadataConfig, error) {
+	if receivedMetadataConfig.IsNull() || len(receivedMetadataConfig.Attributes()) == 0 {
 		return nil, nil
 	}
 
 	var indexed []string
 	values := receivedMetadataConfig.Attributes()["indexed"]
+
 	listValues := values.(basetypes.ListValue)
 	for _, val := range listValues.Elements() {
 		str, ok := val.(basetypes.StringValue)

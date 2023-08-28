@@ -194,7 +194,7 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		PodType:   podType,
 	}
 
-	metadataConfig, err := NewMetadataConfig(&plan.MetadataConfig)
+	metadataConfig, err := NewMetadataConfig(plan.MetadataConfig)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating index",
@@ -251,18 +251,15 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		PodType:   types.StringValue(result.Database.PodType.String()),
 	}
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
-
-	if result.Database.MetadataConfig != nil {
-		planTFMetadataConfig, err := NewTFMetadataConfig(result.Database.MetadataConfig)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error creating index",
-				"Could not create index, unexpected error: "+err.Error(),
-			)
-			return
-		}
-		plan.MetadataConfig = planTFMetadataConfig
+	planTFMetadataConfig, err := NewTFMetadataConfig(result.Database.MetadataConfig)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating index",
+			"Could not create index, unexpected error: "+err.Error(),
+		)
+		return
 	}
+	plan.MetadataConfig = planTFMetadataConfig
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -309,19 +306,15 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		Replicas:  types.Int64Value(int64(index.Database.Replicas)),
 		PodType:   types.StringValue(index.Database.PodType.String()),
 	}
-
-	if index.Database.MetadataConfig != nil {
-		stateTFMetadataConfig, err := NewTFMetadataConfig(index.Database.MetadataConfig)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error Reading Pinecone Index",
-				"Could not read Pinecone Index, unexpected error: "+err.Error(),
-			)
-			return
-		}
-
-		state.MetadataConfig = stateTFMetadataConfig
+	stateTFMetadataConfig, err := NewTFMetadataConfig(index.Database.MetadataConfig)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Reading Pinecone Index",
+			"Could not read Pinecone Index, unexpected error: "+err.Error(),
+		)
+		return
 	}
+	state.MetadataConfig = stateTFMetadataConfig
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -401,17 +394,15 @@ func (r *indexResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		PodType:   types.StringValue(result.Database.PodType.String()),
 	}
 
-	if result.Database.MetadataConfig != nil {
-		planTFMetadataConfig, err := NewTFMetadataConfig(result.Database.MetadataConfig)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error updating index",
-				"Could not update index, unexpected error: "+err.Error(),
-			)
-			return
-		}
-		plan.MetadataConfig = planTFMetadataConfig
+	planTFMetadataConfig, err := NewTFMetadataConfig(result.Database.MetadataConfig)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error updating index",
+			"Could not update index, unexpected error: "+err.Error(),
+		)
+		return
 	}
+	plan.MetadataConfig = planTFMetadataConfig
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)

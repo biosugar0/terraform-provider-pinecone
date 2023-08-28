@@ -142,11 +142,14 @@ func (d *indexDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	if index == nil {
-		// Set an empty state if index is not found
+		// Set an empty state if index is not found. Need to manually set metadata_config to null
 		emptyState := indexDataSourceModel{
 			ID: types.StringValue(data.Name.ValueString()),
 		}
-		resp.State.Set(ctx, &emptyState)
+		emptyState.MetadataConfig, _ = NewTFMetadataConfig(nil) // Set metadata_config to null
+
+		diag := resp.State.Set(ctx, &emptyState)
+		resp.Diagnostics.Append(diag...)
 		return
 	}
 
@@ -168,15 +171,8 @@ func (d *indexDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	// Define MetadataConfig
-	if index.Database.MetadataConfig != nil {
-		metadataConfig, err := NewTFMetadataConfig(index.Database.MetadataConfig)
-		if err != nil {
-			resp.Diagnostics.AddError("Error NewTFMetadataConfig", err.Error())
-			return
-		}
-
-		state.MetadataConfig = metadataConfig
-	}
+	metadataConfig, _ := NewTFMetadataConfig(index.Database.MetadataConfig)
+	state.MetadataConfig = metadataConfig
 
 	// Set state
 	diags := resp.State.Set(ctx, &state)
