@@ -8,6 +8,9 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 var (
@@ -223,12 +226,25 @@ type MetadataConfig struct {
 	Indexed []string `json:"indexed"`
 }
 
-func NewMetadataConfig(receivedMetadataConfig *tfMetadataConfig) (*MetadataConfig, error) {
+func NewMetadataConfig(receivedMetadataConfig *types.Object) (*MetadataConfig, error) {
 	if receivedMetadataConfig == nil {
 		return nil, nil
 	}
+
+	var indexed []string
+	values := receivedMetadataConfig.Attributes()["indexed"]
+	listValues := values.(basetypes.ListValue)
+	for _, val := range listValues.Elements() {
+		str, ok := val.(basetypes.StringValue)
+		if !ok {
+			return nil, fmt.Errorf("error: invalid type for indexed element")
+		}
+
+		indexed = append(indexed, str.ValueString())
+	}
+
 	return &MetadataConfig{
-		Indexed: receivedMetadataConfig.Indexed,
+		Indexed: indexed,
 	}, nil
 }
 

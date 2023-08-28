@@ -2,9 +2,9 @@ package pinecone
 
 import (
 	"context"
-	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -34,30 +34,45 @@ type indexResource struct {
 	client PineconeClientInterface
 }
 
-// metadataConfig is the metadata config implementation.
-type tfMetadataConfig struct {
-	Indexed []string `tfsdk:"indexed"`
-}
-
 type indexResourceModel struct {
-	ID             types.String      `tfsdk:"id"`
-	Name           types.String      `tfsdk:"name"`
-	Dimension      types.Int64       `tfsdk:"dimension"`
-	Metric         types.String      `tfsdk:"metric"`
-	Pods           types.Int64       `tfsdk:"pods"`
-	Replicas       types.Int64       `tfsdk:"replicas"`
-	PodType        types.String      `tfsdk:"pod_type"`
-	MetadataConfig *tfMetadataConfig `tfsdk:"metadata_config"`
-	LastUpdated    types.String      `tfsdk:"last_updated"`
+	ID             types.String `tfsdk:"id"`
+	Name           types.String `tfsdk:"name"`
+	Dimension      types.Int64  `tfsdk:"dimension"`
+	Metric         types.String `tfsdk:"metric"`
+	Pods           types.Int64  `tfsdk:"pods"`
+	Replicas       types.Int64  `tfsdk:"replicas"`
+	PodType        types.String `tfsdk:"pod_type"`
+	MetadataConfig types.Object `tfsdk:"metadata_config"`
+	LastUpdated    types.String `tfsdk:"last_updated"`
 }
 
-func NewTFMetadataConfig(metadataConfig *MetadataConfig) (*tfMetadataConfig, error) {
-	if metadataConfig == nil {
-		return nil, nil
+func NewTFMetadataConfig(metadataConfig *MetadataConfig) (types.Object, error) {
+	// Define the attribute types for the object
+	attributeTypes := map[string]attr.Type{
+		"indexed": types.ListType{
+			ElemType: types.StringType,
+		},
 	}
-	return &tfMetadataConfig{
-		Indexed: metadataConfig.Indexed,
-	}, nil
+
+	if metadataConfig == nil {
+		return types.ObjectNull(attributeTypes), nil
+	}
+
+	indexed := make([]attr.Value, len(metadataConfig.Indexed))
+	for i, v := range metadataConfig.Indexed {
+		value := types.StringValue(v)
+		indexed[i] = value
+	}
+	list_value, _ := types.ListValue(types.StringType, indexed)
+
+	// Define the attributes for the object
+	attributes := map[string]attr.Value{
+		"indexed": list_value,
+	}
+
+	// Create the object
+	object, _ := types.ObjectValue(attributeTypes, attributes)
+	return object, nil
 }
 
 // Metadata returns the resource type name.
@@ -179,17 +194,15 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		PodType:   podType,
 	}
 
-	if plan.MetadataConfig != nil {
-		metadataConfig, err := NewMetadataConfig(plan.MetadataConfig)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error creating index",
-				"Could not create index, unexpected error: "+err.Error(),
-			)
-			return
-		}
-		item.MetadataConfig = metadataConfig
+	metadataConfig, err := NewMetadataConfig(&plan.MetadataConfig)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating index",
+			"Could not create index, unexpected error: "+err.Error(),
+		)
+		return
 	}
+	item.MetadataConfig = metadataConfig
 
 	// Create new order
 	err = r.client.CreateIndex(ctx, item)
@@ -285,8 +298,6 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		resp.State.RemoveResource(ctx)
 		return
 	}
-
-	log.Printf("[DEBUG] Index: %+v", index)
 
 	// Overwrite items with refreshed state
 	state = indexResourceModel{

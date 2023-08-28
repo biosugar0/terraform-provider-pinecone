@@ -25,16 +25,16 @@ type indexDataSource struct {
 }
 
 type indexDataSourceModel struct {
-	ID             types.String      `tfsdk:"id"`
-	Name           types.String      `tfsdk:"name"`
-	Metric         types.String      `tfsdk:"metric"`
-	Dimension      types.Int64       `tfsdk:"dimension"`
-	Replicas       types.Int64       `tfsdk:"replicas"`
-	Shards         types.Int64       `tfsdk:"shards"`
-	Pods           types.Int64       `tfsdk:"pods"`
-	PodType        types.String      `tfsdk:"pod_type"`
-	MetadataConfig *tfMetadataConfig `tfsdk:"metadata_config"`
-	Status         *indexStatus      `tfsdk:"status"`
+	ID             types.String `tfsdk:"id"`
+	Name           types.String `tfsdk:"name"`
+	Metric         types.String `tfsdk:"metric"`
+	Dimension      types.Int64  `tfsdk:"dimension"`
+	Replicas       types.Int64  `tfsdk:"replicas"`
+	Shards         types.Int64  `tfsdk:"shards"`
+	Pods           types.Int64  `tfsdk:"pods"`
+	PodType        types.String `tfsdk:"pod_type"`
+	MetadataConfig types.Object `tfsdk:"metadata_config"`
+	Status         *indexStatus `tfsdk:"status"`
 }
 
 type indexStatus struct {
