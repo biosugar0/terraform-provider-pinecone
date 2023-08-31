@@ -2,6 +2,7 @@ package pinecone
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -56,6 +57,42 @@ func TestNewPodType(t *testing.T) {
 				if result != tc.expected {
 					t.Fatalf("test '%s' failed: expected %v, but received %v", tc.name, tc.expected, result)
 				}
+			}
+		})
+	}
+}
+
+func TestMetadataConfig(t *testing.T) {
+	testCases := []struct {
+		name     string
+		indexed  []string
+		expected MetadataConfig
+	}{
+		{
+			name:     "MetadataConfig with one indexed field",
+			indexed:  []string{"field1"},
+			expected: MetadataConfig{Indexed: []string{"field1"}},
+		},
+		{
+			name:     "MetadataConfig with multiple indexed fields",
+			indexed:  []string{"field1", "field2", "field3"},
+			expected: MetadataConfig{Indexed: []string{"field1", "field2", "field3"}},
+		},
+		{
+			name:     "MetadataConfig with no indexed fields",
+			indexed:  []string{},
+			expected: MetadataConfig{Indexed: []string{}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create new MetadataConfig instance
+			mc := MetadataConfig{Indexed: tc.indexed}
+
+			// Compare the created MetadataConfig instance with the expected one
+			if !reflect.DeepEqual(mc, tc.expected) {
+				t.Fatalf("test '%s' failed: expected %v, but received %v", tc.name, tc.expected, mc)
 			}
 		})
 	}

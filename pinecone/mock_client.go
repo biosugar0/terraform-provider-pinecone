@@ -69,13 +69,14 @@ func (c *MockPineconeClient) CreateIndex(ctx context.Context, req CreateIndexReq
 	// save the index
 	c.indexes[req.Name] = &DescribeIndexResponse{
 		Database: DescribeDatabaseResponse{
-			Name:      req.Name,
-			Metric:    req.Metric,
-			Dimension: req.Dimension,
-			Replicas:  req.Replicas,
-			Shards:    1,
-			Pods:      req.Pods,
-			PodType:   req.PodType,
+			Name:           req.Name,
+			Metric:         req.Metric,
+			Dimension:      req.Dimension,
+			Replicas:       req.Replicas,
+			Shards:         1,
+			Pods:           req.Pods,
+			PodType:        req.PodType,
+			MetadataConfig: req.MetadataConfig,
 		},
 		Status: DescribeStatusResponse{
 			Ready: true,

@@ -25,15 +25,16 @@ type indexDataSource struct {
 }
 
 type indexDataSourceModel struct {
-	ID        types.String `tfsdk:"id"`
-	Name      types.String `tfsdk:"name"`
-	Metric    types.String `tfsdk:"metric"`
-	Dimension types.Int64  `tfsdk:"dimension"`
-	Replicas  types.Int64  `tfsdk:"replicas"`
-	Shards    types.Int64  `tfsdk:"shards"`
-	Pods      types.Int64  `tfsdk:"pods"`
-	PodType   types.String `tfsdk:"pod_type"`
-	Status    *indexStatus `tfsdk:"status"`
+	ID             types.String `tfsdk:"id"`
+	Name           types.String `tfsdk:"name"`
+	Metric         types.String `tfsdk:"metric"`
+	Dimension      types.Int64  `tfsdk:"dimension"`
+	Replicas       types.Int64  `tfsdk:"replicas"`
+	Shards         types.Int64  `tfsdk:"shards"`
+	Pods           types.Int64  `tfsdk:"pods"`
+	PodType        types.String `tfsdk:"pod_type"`
+	MetadataConfig types.Object `tfsdk:"metadata_config"`
+	Status         *indexStatus `tfsdk:"status"`
 }
 
 type indexStatus struct {
@@ -85,6 +86,19 @@ func (d *indexDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 				Description: "The pod type of the index.",
 				Computed:    true,
 			},
+			"metadata_config": schema.SingleNestedAttribute{
+				Description: "The metadata config of the index.",
+				Optional:    true,
+				Computed:    true,
+				Attributes: map[string]schema.Attribute{
+					"indexed": schema.ListAttribute{
+						Description: "The indexed fields of the index.",
+						Optional:    true,
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+				},
+			},
 			"status": schema.SingleNestedAttribute{
 				Description: "The status of the index.",
 				Computed:    true,
@@ -128,11 +142,14 @@ func (d *indexDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	if index == nil {
-		// Set an empty state if index is not found
+		// Set an empty state if index is not found. Need to manually set metadata_config to null
 		emptyState := indexDataSourceModel{
 			ID: types.StringValue(data.Name.ValueString()),
 		}
-		resp.State.Set(ctx, &emptyState)
+		emptyState.MetadataConfig, _ = NewTFMetadataConfig(nil) // Set metadata_config to null
+
+		diag := resp.State.Set(ctx, &emptyState)
+		resp.Diagnostics.Append(diag...)
 		return
 	}
 
@@ -152,6 +169,10 @@ func (d *indexDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 			Ready: types.BoolValue(index.Status.Ready),
 		},
 	}
+
+	// Define MetadataConfig
+	metadataConfig, _ := NewTFMetadataConfig(index.Database.MetadataConfig)
+	state.MetadataConfig = metadataConfig
 
 	// Set state
 	diags := resp.State.Set(ctx, &state)
