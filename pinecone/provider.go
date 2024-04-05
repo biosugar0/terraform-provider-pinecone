@@ -19,15 +19,17 @@ var (
 )
 
 // New is a helper function to simplify provider server and testing implementation.
-func New(cli PineconeClientInterface) provider.Provider {
+func New(cli PineconeClientInterface, version string) provider.Provider {
 	return &pineconeProvider{
-		client: cli,
+		client:  cli,
+		version: version,
 	}
 }
 
 // pineconeProvider is the provider implementation.
 type pineconeProvider struct {
-	client PineconeClientInterface
+	client  PineconeClientInterface
+	version string
 }
 
 // hashicupsProviderModel maps provider schema data to a Go type.
@@ -39,6 +41,7 @@ type pineconeProviderModel struct {
 // Metadata returns the provider type name.
 func (p *pineconeProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "pinecone"
+	resp.Version = "v0.0.6"
 }
 
 // Schema defines the provider-level schema for configuration data.
